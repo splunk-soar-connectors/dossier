@@ -13,15 +13,16 @@
 # either express or implied. See the License for the specific language governing permissions
 # and limitations under the License.
 
+import json
+
 import phantom.app as phantom
-from phantom.base_connector import BaseConnector
+import requests
+from bs4 import UnicodeDammit
 from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
 
 # Usage of the consts file is recommended
 from dossier_consts import *
-import json
-import requests
-from bs4 import UnicodeDammit
 
 
 class RetVal(tuple):
@@ -88,7 +89,7 @@ class DossierConnector(BaseConnector):
         config = self.get_config()
         api_key = config["api_key"].encode('utf-8')
 
-        headers = {"Content-Type": "application/json", "Authorization": "Token " + api_key}
+        headers = {"Content-Type": "application/json", "Authorization": "Token {}".format(api_key)}
 
         url = "{}{}".format(base_url, endpoint)
         r = requests.get(url, headers=headers)
@@ -135,7 +136,7 @@ class DossierConnector(BaseConnector):
 
         if status_code == 200:
             # Add the response into the data section
-            action_result.add_data(response["results"])
+            action_result.add_data(response.get("results"))
             threat_level = 0
             threat_confidence = 0
 
@@ -224,7 +225,7 @@ class DossierConnector(BaseConnector):
 
         if status_code == 200:
             # Add the response into the data section
-            action_result.add_data(response["results"])
+            action_result.add_data(response.get("results"))
 
             # Add a dictionary that is made up of the most important values from data into the summary
             summary = action_result.update_summary({})
@@ -329,8 +330,9 @@ class DossierConnector(BaseConnector):
 
 if __name__ == '__main__':
 
-    import pudb
     import argparse
+
+    import pudb
 
     pudb.set_trace()
 
@@ -346,15 +348,15 @@ if __name__ == '__main__':
     username = args.username
     password = args.password
 
-    if (username is not None and password is None):
+    if username is not None and password is None:
 
         # User specified a username but not a password, so ask
         import getpass
         password = getpass.getpass("Password: ")
 
-    if (username and password):
+    if username and password:
         try:
-            login_url = DossierConnector._get_phantom_base_url() + '/login'
+            login_url = "{}/login".format(DossierConnector._get_phantom_base_url())
 
             print("Accessing the Login page")
             r = requests.get(login_url, verify=False)
@@ -366,7 +368,7 @@ if __name__ == '__main__':
             data['csrfmiddlewaretoken'] = csrftoken
 
             headers = dict()
-            headers['Cookie'] = 'csrftoken=' + csrftoken
+            headers['Cookie'] = 'csrftoken={}'.format(csrftoken)
             headers['Referer'] = login_url
 
             print("Logging into Platform to get the session id")
@@ -384,7 +386,7 @@ if __name__ == '__main__':
         connector = DossierConnector()
         connector.print_progress_message = True
 
-        if (session_id is not None):
+        if session_id is not None:
             in_json['user_session_token'] = session_id
             connector._set_csrf_info(csrftoken, headers['Referer'])
 
