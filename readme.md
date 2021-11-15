@@ -25,4 +25,4 @@
 **Note:**  Users will need a new API key.
 
 
- Users will need to get a new API key from the BloxOne Platform - ActiveTrust Platform API will not be valid.
+ Users will need to get a new API key from the BloxOne Platform - ActiveTrust Platform API will now be invalid.

@@ -104,6 +104,10 @@ class DossierConnector(BaseConnector):
         try:
             # make rest call
             _, status_code = self._make_rest_call("/targets")
+        except requests.exceptions.ConnectionError as e:
+            self.debug_print(self._get_error_message_from_exception(e))
+            error_msg = "Error connecting to server. Connection refused from the server"
+            return action_result.set_status(phantom.APP_ERROR, error_msg)
         except Exception as e:
             err_msg = self._get_error_message_from_exception(e)
             return action_result.set_status(phantom.APP_ERROR, err_msg)
@@ -130,6 +134,10 @@ class DossierConnector(BaseConnector):
         try:
             # make rest call
             response, status_code = self._make_rest_call(url)
+        except requests.exceptions.ConnectionError as e:
+            self.debug_print(self._get_error_message_from_exception(e))
+            error_msg = "Error connecting to server. Connection refused from the server"
+            return action_result.set_status(phantom.APP_ERROR, error_msg)
         except Exception as e:
             err_msg = self._get_error_message_from_exception(e)
             return action_result.set_status(phantom.APP_ERROR, err_msg)
@@ -178,6 +186,10 @@ class DossierConnector(BaseConnector):
         try:
             # make rest call
             response, status_code = self._make_rest_call(url)
+        except requests.exceptions.ConnectionError as e:
+            self.debug_print(self._get_error_message_from_exception(e))
+            error_msg = "Error connecting to server. Connection refused from the server"
+            return action_result.set_status(phantom.APP_ERROR, error_msg)
         except Exception as e:
             err_msg = self._get_error_message_from_exception(e)
             return action_result.set_status(phantom.APP_ERROR, err_msg)
@@ -219,6 +231,10 @@ class DossierConnector(BaseConnector):
         try:
             # make rest call
             response, status_code = self._make_rest_call(url)
+        except requests.exceptions.ConnectionError as e:
+            self.debug_print(self._get_error_message_from_exception(e))
+            error_msg = "Error connecting to server. Connection refused from the server"
+            return action_result.set_status(phantom.APP_ERROR, error_msg)
         except Exception as e:
             err_msg = self._get_error_message_from_exception(e)
             return action_result.set_status(phantom.APP_ERROR, err_msg)
@@ -256,6 +272,10 @@ class DossierConnector(BaseConnector):
         try:
             # make rest call
             response, status_code = self._make_rest_call(url)
+        except requests.exceptions.ConnectionError as e:
+            self.debug_print(self._get_error_message_from_exception(e))
+            error_msg = "Error connecting to server. Connection refused from the server"
+            return action_result.set_status(phantom.APP_ERROR, error_msg)
         except Exception as e:
             err_msg = self._get_error_message_from_exception(e)
             return action_result.set_status(phantom.APP_ERROR, err_msg)
