@@ -1,7 +1,19 @@
 # File: dossier_connector.py
 # Copyright (c) 2019-2021 Splunk Inc.
 #
-# Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.txt)
+# Copyright (c) 2019-2021 Splunk Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied. See the License for the specific language governing permissions
+# and limitations under the License.
+
 import json
 
 import phantom.app as phantom
@@ -27,11 +39,6 @@ class DossierConnector(BaseConnector):
         super(DossierConnector, self).__init__()
 
         self._state = None
-
-        # Variable to hold a base_url in case the app makes REST calls
-        # Do note that the app json defines the asset config, so please
-        # modify this as you deem fit.
-        self._base_url = None
 
     def _handle_py_ver_compat_for_input_str(self, input_str):
         """
@@ -83,7 +90,7 @@ class DossierConnector(BaseConnector):
         config = self.get_config()
         api_key = config["api_key"].encode('utf-8')
 
-        headers = {"Content-Type": "application/json", "Authorization": "Token " + api_key}
+        headers = {"Content-Type": "application/json", "Authorization": "Token {}".format(api_key)}
 
         url = "{}{}".format(base_url, endpoint)
         r = requests.get(url, headers=headers)
@@ -95,8 +102,16 @@ class DossierConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         self.save_progress("Connecting to endpoint")
-        # make rest call
-        _, status_code = self._make_rest_call("/targets")
+        try:
+            # make rest call
+            _, status_code = self._make_rest_call("/targets")
+        except requests.exceptions.ConnectionError as e:
+            self.debug_print(self._get_error_message_from_exception(e))
+            error_msg = "Error connecting to server. Connection refused from the server"
+            return action_result.set_status(phantom.APP_ERROR, error_msg)
+        except Exception as e:
+            err_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, err_msg)
 
         if status_code == 200:
             self.save_progress("Successfully connected and authenticated")
@@ -117,12 +132,20 @@ class DossierConnector(BaseConnector):
         # format our url
         url = "/indicator/host?value={}&source=atp&wait=true".format(domain)
 
-        # make rest call
-        response, status_code = self._make_rest_call(url)
+        try:
+            # make rest call
+            response, status_code = self._make_rest_call(url)
+        except requests.exceptions.ConnectionError as e:
+            self.debug_print(self._get_error_message_from_exception(e))
+            error_msg = "Error connecting to server. Connection refused from the server"
+            return action_result.set_status(phantom.APP_ERROR, error_msg)
+        except Exception as e:
+            err_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, err_msg)
 
         if status_code == 200:
             # Add the response into the data section
-            action_result.add_data(response["results"])
+            action_result.add_data(response.get("results"))
             threat_level = 0
             threat_confidence = 0
 
@@ -147,7 +170,7 @@ class DossierConnector(BaseConnector):
             # Return success, no need to set the message, only the status
             return action_result.set_status(phantom.APP_SUCCESS)
         else:
-            return action_result.set_status(phantom.APP_ERROR, "Error fetching data")
+            return action_result.set_status(phantom.APP_ERROR, ERR_FETCHING_DATA)
 
     def _handle_lookup_hash(self, param):
 
@@ -160,8 +183,17 @@ class DossierConnector(BaseConnector):
 
         # format our url
         url = "/indicator/hash?value={}&source=malware_analysis&wait=true".format(hash)
-        # make rest call
-        response, status_code = self._make_rest_call(url)
+
+        try:
+            # make rest call
+            response, status_code = self._make_rest_call(url)
+        except requests.exceptions.ConnectionError as e:
+            self.debug_print(self._get_error_message_from_exception(e))
+            error_msg = "Error connecting to server. Connection refused from the server"
+            return action_result.set_status(phantom.APP_ERROR, error_msg)
+        except Exception as e:
+            err_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, err_msg)
 
         if status_code == 200:
             # Add the response into the data section
@@ -182,7 +214,7 @@ class DossierConnector(BaseConnector):
             # Return success, no need to set the message, only the status
             return action_result.set_status(phantom.APP_SUCCESS)
         else:
-            return action_result.set_status(phantom.APP_ERROR, "Error fetching data")
+            return action_result.set_status(phantom.APP_ERROR, ERR_FETCHING_DATA)
 
     def _handle_lookup_url(self, param):
 
@@ -197,12 +229,20 @@ class DossierConnector(BaseConnector):
         # format our url
         url = "/indicator/url?value={}&source=atp&wait=true".format(submitted_url)
 
-        # make rest call
-        response, status_code = self._make_rest_call(url)
+        try:
+            # make rest call
+            response, status_code = self._make_rest_call(url)
+        except requests.exceptions.ConnectionError as e:
+            self.debug_print(self._get_error_message_from_exception(e))
+            error_msg = "Error connecting to server. Connection refused from the server"
+            return action_result.set_status(phantom.APP_ERROR, error_msg)
+        except Exception as e:
+            err_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, err_msg)
 
         if status_code == 200:
             # Add the response into the data section
-            action_result.add_data(response["results"])
+            action_result.add_data(response.get("results"))
 
             # Add a dictionary that is made up of the most important values from data into the summary
             summary = action_result.update_summary({})
@@ -216,7 +256,7 @@ class DossierConnector(BaseConnector):
             # Return success, no need to set the message, only the status
             return action_result.set_status(phantom.APP_SUCCESS)
         else:
-            return action_result.set_status(phantom.APP_ERROR, "Error fetching data")
+            return action_result.set_status(phantom.APP_ERROR, ERR_FETCHING_DATA)
 
     def _handle_lookup_ip(self, param):
 
@@ -230,8 +270,16 @@ class DossierConnector(BaseConnector):
         # format our url
         url = "/indicator/ip?value={}&source=atp&wait=true".format(ip)
 
-        # make rest call
-        response, status_code = self._make_rest_call(url)
+        try:
+            # make rest call
+            response, status_code = self._make_rest_call(url)
+        except requests.exceptions.ConnectionError as e:
+            self.debug_print(self._get_error_message_from_exception(e))
+            error_msg = "Error connecting to server. Connection refused from the server"
+            return action_result.set_status(phantom.APP_ERROR, error_msg)
+        except Exception as e:
+            err_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, err_msg)
         if status_code == 200:
             # Add the response into the data section
             action_result.add_data(response.get("results"))
@@ -251,7 +299,7 @@ class DossierConnector(BaseConnector):
             # Return success, no need to set the message, only the status
             return action_result.set_status(phantom.APP_SUCCESS)
         else:
-            return action_result.set_status(phantom.APP_ERROR, "Error fetching data")
+            return action_result.set_status(phantom.APP_ERROR, ERR_FETCHING_DATA)
 
     def handle_action(self, param):
 
@@ -285,10 +333,12 @@ class DossierConnector(BaseConnector):
         # that needs to be accessed across actions
         self._state = self.load_state()
 
-        # get the asset config
-        config = self.get_config()
-
-        self._base_url = config.get('base_url')
+        if not isinstance(self._state, dict):
+            self.debug_print("Resetting the state file with the default format")
+            self._state = {
+                "app_version": self.get_app_json().get('app_version')
+            }
+            return self.set_status(phantom.APP_ERROR, STATE_FILE_CORRUPT_ERR)
 
         return phantom.APP_SUCCESS
 
@@ -319,15 +369,15 @@ if __name__ == '__main__':
     username = args.username
     password = args.password
 
-    if (username is not None and password is None):
+    if username is not None and password is None:
 
         # User specified a username but not a password, so ask
         import getpass
         password = getpass.getpass("Password: ")
 
-    if (username and password):
+    if username and password:
         try:
-            login_url = DossierConnector._get_phantom_base_url() + '/login'
+            login_url = "{}/login".format(DossierConnector._get_phantom_base_url())
 
             print("Accessing the Login page")
             r = requests.get(login_url, verify=False)
@@ -339,7 +389,7 @@ if __name__ == '__main__':
             data['csrfmiddlewaretoken'] = csrftoken
 
             headers = dict()
-            headers['Cookie'] = 'csrftoken=' + csrftoken
+            headers['Cookie'] = 'csrftoken={}'.format(csrftoken)
             headers['Referer'] = login_url
 
             print("Logging into Platform to get the session id")
@@ -357,7 +407,7 @@ if __name__ == '__main__':
         connector = DossierConnector()
         connector.print_progress_message = True
 
-        if (session_id is not None):
+        if session_id is not None:
             in_json['user_session_token'] = session_id
             connector._set_csrf_info(csrftoken, headers['Referer'])
 
