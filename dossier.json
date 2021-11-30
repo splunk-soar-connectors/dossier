@@ -20,7 +20,7 @@
     "package_name": "phantom_dossier",
     "main_module": "dossier_connector.py",
     "python_version": "2.7",
-    "min_phantom_version": "4.10.0.40961",
+    "min_phantom_version": "5.0.0",
     "app_wizard_version": "1.0.0",
     "configuration": {
         "api_key": {
