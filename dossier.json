@@ -15,8 +15,8 @@
         }
     ],
     "license": "Copyright (c) 2019-2021 Splunk Inc.",
-    "app_version": "1.2.0",
-    "utctime_updated": "2021-11-15T13:11:10.000000Z",
+    "app_version": "1.2.1",
+    "utctime_updated": "2021-12-08T08:16:43.000000Z",
     "package_name": "phantom_dossier",
     "main_module": "dossier_connector.py",
     "python_version": "2.7",
