@@ -1,6 +1,6 @@
 {
     "appid": "341d81e0-5308-4d4d-93dd-d20a2a01d941",
-    "name": "Dossier",
+    "name": "Dossier for SOAR",
     "description": "This app supports investigate actions on the Infoblox Dossier platform",
     "type": "information",
     "product_vendor": "Infoblox",
@@ -14,13 +14,13 @@
             "name": "Chris Marrison (chris@infoblox.com)"
         }
     ],
-    "license": "Copyright (c) 2019-2021 Splunk Inc.",
-    "app_version": "1.2.1",
-    "utctime_updated": "2021-12-08T08:16:43.000000Z",
+    "license": "Copyright (c) 2019-2022 Splunk Inc.",
+    "app_version": "1.2.2",
+    "utctime_updated": "2022-01-07T20:54:12.000000Z",
     "package_name": "phantom_dossier",
     "main_module": "dossier_connector.py",
     "python_version": "2.7",
-    "min_phantom_version": "5.0.0",
+    "min_phantom_version": "5.2.0",
     "app_wizard_version": "1.0.0",
     "configuration": {
         "api_key": {

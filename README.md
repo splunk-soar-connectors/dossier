@@ -1,18 +1,18 @@
 [comment]: # "Auto-generated SOAR connector documentation"
-# Dossier
+# Dossier for SOAR
 
 Publisher: Splunk Community  
-Connector Version: 1\.2\.1  
+Connector Version: 1\.2\.2  
 Product Vendor: Infoblox  
 Product Name: Dossier  
 Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 5\.0\.0  
+Minimum Product Version: 5\.2\.0  
 
 This app supports investigate actions on the Infoblox Dossier platform
 
-[comment]: # " File: readme.md"
+[comment]: # " File: README.md"
 [comment]: # ""
-[comment]: # "  Copyright (c) 2019-2021 Splunk Inc."
+[comment]: # "  Copyright (c) 2019-2022 Splunk Inc."
 [comment]: # ""
 [comment]: # "  Licensed under the Apache License, Version 2.0 (the 'License');"
 [comment]: # "  you may not use this file except in compliance with the License."

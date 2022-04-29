@@ -1,6 +1,6 @@
 # File: dossier_consts.py
 #
-# Copyright (c) 2019-2021 Splunk Inc.
+# Copyright (c) 2019-2022 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,3 +27,4 @@ STATE_FILE_CORRUPT_ERR = (
     "Error occurred while loading the state file due to its unexpected format. "
     "Resetting the state file with the default format. Please try again."
 )
+DOSSIER_DEFAULT_REQUEST_TIMEOUT = 30  # in seconds
