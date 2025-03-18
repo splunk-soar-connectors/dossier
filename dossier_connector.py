@@ -1,6 +1,6 @@
 # File: dossier_connector.py
 #
-# Copyright (c) 2019-2022 Splunk Inc.
+# Copyright (c) 2019-2025 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,11 +31,9 @@ class RetVal(tuple):
 
 
 class DossierConnector(BaseConnector):
-
     def __init__(self):
-
         # Call the BaseConnectors init first
-        super(DossierConnector, self).__init__()
+        super().__init__()
 
         self._state = None
 
@@ -47,14 +45,14 @@ class DossierConnector(BaseConnector):
         """
         try:
             if input_str and self._python_version == 2:
-                input_str = UnicodeDammit(input_str).unicode_markup.encode('utf-8')
+                input_str = UnicodeDammit(input_str).unicode_markup.encode("utf-8")
         except:
             self.debug_print("Error occurred while handling python 2to3 compatibility for the input string")
 
         return input_str
 
     def _get_error_message_from_exception(self, e):
-        """ This method is used to get appropriate error messages from the exception.
+        """This method is used to get appropriate error messages from the exception.
         :param e: Exception object
         :return: error message
         """
@@ -80,24 +78,22 @@ class DossierConnector(BaseConnector):
         except:
             error_msg = ERR_MSG_UNAVAILABLE
 
-        return "Error Code: {0}. Error Message: {1}".format(error_code, error_msg)
+        return f"Error Code: {error_code}. Error Message: {error_msg}"
 
     def _make_rest_call(self, endpoint):
-
         base_url = "https://csp.infoblox.com/tide/api/services/intel/lookup"
 
         config = self.get_config()
-        api_key = config["api_key"].encode('utf-8')
+        api_key = config["api_key"].encode("utf-8")
 
-        headers = {"Content-Type": "application/json", "Authorization": "Token {}".format(api_key)}
+        headers = {"Content-Type": "application/json", "Authorization": f"Token {api_key}"}
 
-        url = "{}{}".format(base_url, endpoint)
+        url = f"{base_url}{endpoint}"
         r = requests.get(url, headers=headers)
 
         return r.json(), r.status_code
 
     def _handle_test_connectivity(self, param):
-
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         self.save_progress("Connecting to endpoint")
@@ -120,16 +116,15 @@ class DossierConnector(BaseConnector):
             return action_result.set_status(phantom.APP_SUCCESS)
 
     def _handle_lookup_domain(self, param):
-
-        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
 
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         # Required values can be accessed directly
-        domain = param['domain']
+        domain = param["domain"]
 
         # format our url
-        url = "/indicator/host?value={}&source=atp&wait=true".format(domain)
+        url = f"/indicator/host?value={domain}&source=atp&wait=true"
 
         try:
             # make rest call
@@ -151,20 +146,19 @@ class DossierConnector(BaseConnector):
             try:
                 # this gets the highest threat level and confidence score for the summary
                 for i in response["results"][0]["data"]["threat"]:
-
                     if i["threat_level"] > threat_level:
                         threat_level = i["threat_level"]
 
                     if "confidence" in i and i["confidence"] > threat_confidence:
-                        self.debug_print(i['confidence'])
+                        self.debug_print(i["confidence"])
             except Exception as e:
                 err_msg = self._get_error_message_from_exception(e)
                 return action_result.set_status(phantom.APP_ERROR, err_msg)
 
             # Add a dictionary that is made up of the most important values from data into the summary
             summary = action_result.update_summary({})
-            summary['threat_level'] = threat_level
-            summary['threat_confidence'] = threat_confidence
+            summary["threat_level"] = threat_level
+            summary["threat_confidence"] = threat_confidence
 
             # Return success, no need to set the message, only the status
             return action_result.set_status(phantom.APP_SUCCESS)
@@ -172,16 +166,15 @@ class DossierConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, ERR_FETCHING_DATA)
 
     def _handle_lookup_hash(self, param):
-
-        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
 
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         # Required values can be accessed directly
-        hash = param['hash']
+        hash = param["hash"]
 
         # format our url
-        url = "/indicator/hash?value={}&source=malware_analysis&wait=true".format(hash)
+        url = f"/indicator/hash?value={hash}&source=malware_analysis&wait=true"
 
         try:
             # make rest call
@@ -203,9 +196,9 @@ class DossierConnector(BaseConnector):
             try:
                 if response.get("results"):
                     if response["results"][0]["data"].get("details", {}).get("av_match_count"):
-                        summary['results'] = response["results"][0]["data"].get("details", {}).get("av_match_count")
+                        summary["results"] = response["results"][0]["data"].get("details", {}).get("av_match_count")
                     else:
-                        summary['results'] = 0
+                        summary["results"] = 0
             except Exception as e:
                 err_msg = self._get_error_message_from_exception(e)
                 return action_result.set_status(phantom.APP_ERROR, err_msg)
@@ -216,17 +209,16 @@ class DossierConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, ERR_FETCHING_DATA)
 
     def _handle_lookup_url(self, param):
-
-        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
 
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         # Required values can be accessed directly
         # submitted_url comes from phantom. not the best name, i know.
-        submitted_url = param['url']
+        submitted_url = param["url"]
 
         # format our url
-        url = "/indicator/url?value={}&source=atp&wait=true".format(submitted_url)
+        url = f"/indicator/url?value={submitted_url}&source=atp&wait=true"
 
         try:
             # make rest call
@@ -247,7 +239,7 @@ class DossierConnector(BaseConnector):
             summary = action_result.update_summary({})
             try:
                 if response.get("results"):
-                    summary['results'] = response["results"][0]["data"]["record_count"]
+                    summary["results"] = response["results"][0]["data"]["record_count"]
             except Exception as e:
                 err_msg = self._get_error_message_from_exception(e)
                 return action_result.set_status(phantom.APP_ERROR, err_msg)
@@ -258,16 +250,15 @@ class DossierConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, ERR_FETCHING_DATA)
 
     def _handle_lookup_ip(self, param):
-
-        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
 
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         # Required values can be accessed directly
-        ip = param['ip']
+        ip = param["ip"]
 
         # format our url
-        url = "/indicator/ip?value={}&source=atp&wait=true".format(ip)
+        url = f"/indicator/ip?value={ip}&source=atp&wait=true"
 
         try:
             # make rest call
@@ -288,9 +279,9 @@ class DossierConnector(BaseConnector):
             try:
                 if response.get("results"):
                     if response["results"][0]["data"].get("record_count"):
-                        summary['results'] = response["results"][0]["data"]["record_count"]
+                        summary["results"] = response["results"][0]["data"]["record_count"]
                     else:
-                        summary['results'] = 0
+                        summary["results"] = 0
             except Exception as e:
                 err_msg = self._get_error_message_from_exception(e)
                 return action_result.set_status(phantom.APP_ERROR, err_msg)
@@ -301,7 +292,6 @@ class DossierConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, ERR_FETCHING_DATA)
 
     def handle_action(self, param):
-
         ret_val = phantom.APP_SUCCESS
 
         # Get the action that we are supposed to execute for this App Run
@@ -309,47 +299,42 @@ class DossierConnector(BaseConnector):
 
         self.debug_print("action_id", self.get_action_identifier())
 
-        if action_id == 'test_connectivity':
+        if action_id == "test_connectivity":
             ret_val = self._handle_test_connectivity(param)
 
-        elif action_id == 'lookup_domain':
+        elif action_id == "lookup_domain":
             ret_val = self._handle_lookup_domain(param)
 
-        elif action_id == 'lookup_hash':
+        elif action_id == "lookup_hash":
             ret_val = self._handle_lookup_hash(param)
 
-        elif action_id == 'lookup_url':
+        elif action_id == "lookup_url":
             ret_val = self._handle_lookup_url(param)
 
-        elif action_id == 'lookup_ip':
+        elif action_id == "lookup_ip":
             ret_val = self._handle_lookup_ip(param)
 
         return ret_val
 
     def initialize(self):
-
         # Load the state in initialize, use it to store data
         # that needs to be accessed across actions
         self._state = self.load_state()
 
         if not isinstance(self._state, dict):
             self.debug_print("Resetting the state file with the default format")
-            self._state = {
-                "app_version": self.get_app_json().get('app_version')
-            }
+            self._state = {"app_version": self.get_app_json().get("app_version")}
             return self.set_status(phantom.APP_ERROR, STATE_FILE_CORRUPT_ERR)
 
         return phantom.APP_SUCCESS
 
     def finalize(self):
-
         # Save the state, this data is saved across actions and app upgrades
         self.save_state(self._state)
         return phantom.APP_SUCCESS
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     import argparse
     import sys
 
@@ -359,10 +344,10 @@ if __name__ == '__main__':
 
     argparser = argparse.ArgumentParser()
 
-    argparser.add_argument('input_test_json', help='Input Test JSON file')
-    argparser.add_argument('-u', '--username', help='username', required=False)
-    argparser.add_argument('-p', '--password', help='password', required=False)
-    argparser.add_argument('-v', '--verify', action='store_true', help='verify', required=False, default=False)
+    argparser.add_argument("input_test_json", help="Input Test JSON file")
+    argparser.add_argument("-u", "--username", help="username", required=False)
+    argparser.add_argument("-p", "--password", help="password", required=False)
+    argparser.add_argument("-v", "--verify", action="store_true", help="verify", required=False, default=False)
 
     args = argparser.parse_args()
     session_id = None
@@ -372,31 +357,31 @@ if __name__ == '__main__':
     verify = args.verify
 
     if username is not None and password is None:
-
         # User specified a username but not a password, so ask
         import getpass
+
         password = getpass.getpass("Password: ")
 
     if username and password:
         try:
-            login_url = "{}/login".format(DossierConnector._get_phantom_base_url())
+            login_url = f"{DossierConnector._get_phantom_base_url()}/login"
 
             print("Accessing the Login page")
             r = requests.get(login_url, verify=verify, timeout=DOSSIER_DEFAULT_REQUEST_TIMEOUT)
-            csrftoken = r.cookies['csrftoken']
+            csrftoken = r.cookies["csrftoken"]
 
             data = dict()
-            data['username'] = username
-            data['password'] = password
-            data['csrfmiddlewaretoken'] = csrftoken
+            data["username"] = username
+            data["password"] = password
+            data["csrfmiddlewaretoken"] = csrftoken
 
             headers = dict()
-            headers['Cookie'] = 'csrftoken={}'.format(csrftoken)
-            headers['Referer'] = login_url
+            headers["Cookie"] = f"csrftoken={csrftoken}"
+            headers["Referer"] = login_url
 
             print("Logging into Platform to get the session id")
             r2 = requests.post(login_url, verify=verify, data=data, headers=headers, timeout=DOSSIER_DEFAULT_REQUEST_TIMEOUT)
-            session_id = r2.cookies['sessionid']
+            session_id = r2.cookies["sessionid"]
         except Exception as e:
             print("Unable to get session id from the platform. Error: " + str(e))
             sys.exit(1)
@@ -410,8 +395,8 @@ if __name__ == '__main__':
         connector.print_progress_message = True
 
         if session_id is not None:
-            in_json['user_session_token'] = session_id
-            connector._set_csrf_info(csrftoken, headers['Referer'])
+            in_json["user_session_token"] = session_id
+            connector._set_csrf_info(csrftoken, headers["Referer"])
 
         ret_val = connector._handle_action(json.dumps(in_json), None)
         print(json.dumps(json.loads(ret_val), indent=4))
